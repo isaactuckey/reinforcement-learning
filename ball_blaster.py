@@ -1,6 +1,7 @@
 import math
 import os
 import pygame
+import pygame.gfxdraw
 
 class Wall(pygame.sprite.Sprite):
     def __init__(self, pos):
@@ -10,16 +11,17 @@ class Wall(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.topleft = pos
 
-    def draw(self, surface):
-        surface.blit(self.image, self.rect)
+    def draw(self, screen):
+        screen.blit(self.image, self.rect)
 
 class Ball(pygame.sprite.Sprite):
     def __init__(self, pos, vector):
-        pygame.sprite.Sprite.__init__(self)
-        self.rect = pygame.Rect(pos[0], pos[1], 50, 50)
+        super().__init__()
+        self.image = pygame.Surface((50, 50), pygame.SRCALPHA)
+        self.rect = self.image.get_rect(center=pos)
         self.vector = vector
         self.time = 0
-        self.gravity = 9.8
+        self.gravity = 1.1
 
     def update(self):
         newpos = self.calcnewpos(self.rect,self.vector)
@@ -32,7 +34,8 @@ class Ball(pygame.sprite.Sprite):
 
     def draw(self, screen):
         # Blit the ball onto the game screen
-        pygame.draw.ellipse(screen, (255, 255, 255), self.rect)
+        pygame.gfxdraw.filled_circle(self.image, 100, 100, 50, (255, 255, 255))
+        screen.blit(self.image, self.rect)
 
 def load_png(name):
     """ Load image and return image object"""
@@ -57,15 +60,17 @@ def main():
 
     # Sprite groups
     all_sprites = pygame.sprite.Group()
+    balls = pygame.sprite.Group()
     walls = pygame.sprite.Group()
 
     # Create instances of the Ball and Wall classes
-    ball = Ball((100, 100), [1, 1])
+    ball = Ball((500, 500), (0, 1))
     wall = Wall((300, 400))
 
     # Add sprites to their respective groups
     all_sprites.add(ball)
     all_sprites.add(wall)
+    balls.add(ball)
     walls.add(wall)
     
     # Game loop
@@ -78,10 +83,11 @@ def main():
         # Add your game logic and update the game state here
         ball.update()
 
-        screen.fill((0, 0, 0))  # Clear the screen with a solid color
+        # Clear the screen with a solid color
+        screen.fill((0, 0, 0))  
 
         # Add your game rendering code here
-        ball.draw(screen)
+        all_sprites.draw(screen)
 
         pygame.display.flip()  # Update the display
 
